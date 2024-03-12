@@ -8,37 +8,33 @@ interface Task {
 
 interface TasksState {
   tasks: Task[];
+  lastId: number;
 }
 
 const initialState: TasksState = {
   tasks: [],
+  lastId: 0,
 };
 
 export const tasksSlice = createSlice({
-  name: 'tasks',
+  name: "tasks",
   initialState,
   reducers: {
-    addTask: (state, action: PayloadAction<Task>) => {
-      state.tasks.push(action.payload);
+    addTask: (state, action: PayloadAction<Omit<Task, 'id'>>) => {
+      const newId = ++state.lastId;
+      const newTask = { ...action.payload, id: newId.toString() };
+      state.tasks.push(newTask);
     },
-    toggleTask: (state, action: PayloadAction<string>) => {
+    checkTask: (state, action: PayloadAction<string>) => {
       const task = state.tasks.find(task => task.id === action.payload);
       if (task) {
         task.completed = !task.completed;
       }
     },
-    removeTask: (state, action: PayloadAction<string>) => {
-      state.tasks = state.tasks.filter(task => task.id !== action.payload);
-    },
-    editTaskTitle: (state, action: PayloadAction<{ id: string; title: string }>) => {
-      const task = state.tasks.find(task => task.id === action.payload.id);
-      if (task) {
-        task.title = action.payload.title;
-      }
-    },
-  },
+
+  }
 });
 
-export const { addTask, toggleTask, removeTask, editTaskTitle } = tasksSlice.actions;
+export const { addTask, checkTask} = tasksSlice.actions;
 
 export default tasksSlice.reducer;

@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../features/store';
-import { addTask, toggleTask } from '../features/tasksSlice';
-import { v4 as uuidv4 } from 'uuid';
 import Link from 'next/link';
+import { addTask, checkTask } from '../features/tasksSlice';
+import { RootState } from '../features/store';
 
 export default function Home() {
   const [taskTitle, setTaskTitle] = useState('');
@@ -11,31 +10,54 @@ export default function Home() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const initialTasks = [
-      { id: uuidv4(), title: "Sample Task 1", completed: false },
-      { id: uuidv4(), title: "Sample Task 2", completed: true },
-    ];
-    initialTasks.forEach(task => {
-      dispatch(addTask(task));
-    });
-  }, [dispatch]);
+    document.title = `You have ${tasks.length} tasks`;
+  }, [tasks]);
 
-  const handleAddTask = () => {
-    dispatch(addTask({ id: uuidv4(), title: taskTitle, completed: false }));
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!taskTitle.trim()) return;
+    dispatch(addTask({ title: taskTitle, completed: false }));
     setTaskTitle('');
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <ul>
-        {tasks.map(task => (
-          <li key={task.id} className={`mb-2 ${task.completed ? 'text-gray-400 line-through' : ''}`}>
-            <Link href={`/tasks/${task.id}`}>
-              <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded ml-2">Details</button>
+    <div className='bg-gradient-to-r from-blue-300 via-purple-300 to-red-300 w-screen h-screen'>
+    <div className='max-w-xl mx-auto py-8'>
+      <h1 className='mb-7 text-center text-4xl'>Task Manager</h1>
+      <form onSubmit={handleSubmit} className="flex items-center mb-6">
+        <input
+          value={taskTitle}
+          onChange={(e) => setTaskTitle(e.target.value)}
+          placeholder="Add a new task"
+          className='flex-1 p-2 m-2 border text-black rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+          aria-label="Task Title"
+        />
+        <button 
+          type="submit" 
+          className='px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50'>
+          Add Task
+        </button>
+      </form>
+      <ul className="space-y-4">
+        {tasks.map((task) => (
+          <li key={task.id} className='flex items-center gap-4 bg-white text-black p-4 rounded-lg shadow'>
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={() => dispatch(checkTask(task.id))}
+              aria-label={'Mark ${task.title} as completed'}
+              className='w-5 h-5'
+            />
+            <span className={`${task.completed ? 'text-gray-500 line-through' : 'text-gray-900'} flex-1`}>
+              {task.title}
+            </span>
+            <Link href={`/tasks/${task.id}`} className="text-blue-500 hover:text-blue-700 transition duration-150 ease-in-out">
+              Details
             </Link>
           </li>
         ))}
       </ul>
+    </div>
     </div>
   );
 }
